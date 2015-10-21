@@ -7,6 +7,7 @@ import android.telephony.CellInfo;
 import android.telephony.CellInfoLte;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 import android.widget.TextView;
 
 import java.util.List;
@@ -20,8 +21,6 @@ Defined values
 31 -51 dBm or greater
 99 not known or not detectable
  */
-
-// Note: getCellIdentity does not work on Samsung phones!!!!! 
 
 /*
 The parts[] array will then contain these elements:
@@ -82,35 +81,41 @@ public class SignalStrengthActivity  extends Activity {
         ((TelephonyManager) getSystemService(TELEPHONY_SERVICE)).listen(signalStrengthListener, SignalStrengthListener.LISTEN_SIGNAL_STRENGTHS);
         tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
 
-        cellInfoList = tm.getAllCellInfo();
+        try {
+            cellInfoList = tm.getAllCellInfo();
+        } catch (Exception e) {
+            Log.d("SignalStrength", "+++++++++++++++++++++++++++++++++++++++++ null array spot 1: " + e);
+
+        }
 
 
+        try {
+            for (CellInfo cellInfo : cellInfoList) {
+                if (cellInfo instanceof CellInfoLte) {
+                    // cast to CellInfoLte and call all the CellInfoLte methods you need
+                    // gets RSRP cell signal strength:
+                    cellSig = ((CellInfoLte) cellInfo).getCellSignalStrength().getDbm();
 
-        for (CellInfo cellInfo : cellInfoList)
-        {
-            if (cellInfo instanceof CellInfoLte)
-            {
-                // cast to CellInfoLte and call all the CellInfoLte methods you need
-                // gets RSRP cell signal strength:
-                cellSig = ((CellInfoLte)cellInfo).getCellSignalStrength().getDbm();
+                    // Gets the LTE cell indentity: (returns 28-bit Cell Identity, Integer.MAX_VALUE if unknown)
+                    cellID = ((CellInfoLte) cellInfo).getCellIdentity().getCi();
 
-                // Gets the LTE cell indentity: (returns 28-bit Cell Identity, Integer.MAX_VALUE if unknown)
-                cellID = ((CellInfoLte)cellInfo).getCellIdentity().getCi();
+                    // Gets the LTE MCC: (returns 3-digit Mobile Country Code, 0..999, Integer.MAX_VALUE if unknown)
+                    cellMcc = ((CellInfoLte) cellInfo).getCellIdentity().getMcc();
 
-                // Gets the LTE MCC: (returns 3-digit Mobile Country Code, 0..999, Integer.MAX_VALUE if unknown)
-                cellMcc = ((CellInfoLte)cellInfo).getCellIdentity().getMcc();
+                    // Gets theLTE MNC: (returns 2 or 3-digit Mobile Network Code, 0..999, Integer.MAX_VALUE if unknown)
+                    cellMnc = ((CellInfoLte) cellInfo).getCellIdentity().getMnc();
 
-                // Gets theLTE MNC: (returns 2 or 3-digit Mobile Network Code, 0..999, Integer.MAX_VALUE if unknown)
-                cellMnc = ((CellInfoLte)cellInfo).getCellIdentity().getMnc();
+                    // Gets the LTE PCI: (returns Physical Cell Id 0..503, Integer.MAX_VALUE if unknown)
+                    cellPci = ((CellInfoLte) cellInfo).getCellIdentity().getPci();
 
-                // Gets the LTE PCI: (returns Physical Cell Id 0..503, Integer.MAX_VALUE if unknown)
-                cellPci = ((CellInfoLte)cellInfo).getCellIdentity().getPci();
+                    // Gets the LTE TAC: (returns 16-bit Tracking Area Code, Integer.MAX_VALUE if unknown)
+                    cellTac = ((CellInfoLte) cellInfo).getCellIdentity().getTac();
 
-                // Gets the LTE TAC: (returns 16-bit Tracking Area Code, Integer.MAX_VALUE if unknown)
-                cellTac = ((CellInfoLte)cellInfo).getCellIdentity().getTac();
+                }
 
             }
-
+        } catch (Exception e) {
+            Log.d("SignalStrength", "++++++++++++++++++++++ null array spot 2: " + e);
         }
 
     }
@@ -146,13 +151,6 @@ public class SignalStrengthActivity  extends Activity {
         @Override
         public void onSignalStrengthsChanged(android.telephony.SignalStrength signalStrength) {
 
-            // get the signal strength (a value between 0 and 31)
-            //int strengthAmplitude = cellInfo.getCellSignalStrength().getDbm();
-
-            //do something with it (in this case we update a text view)
-            //signalStrengthTextView.setText(String.valueOf(cellSig));
-            //super.onSignalStrengthsChanged(signalStrength);
-
             //++++++++++++++++++++++++++++++++++
 
             ((TelephonyManager) getSystemService(TELEPHONY_SERVICE)).listen(signalStrengthListener, SignalStrengthListener.LISTEN_SIGNAL_STRENGTHS);
@@ -163,31 +161,33 @@ public class SignalStrengthActivity  extends Activity {
             String[] parts = ltestr.split(" ");
             String cellSig2 = parts[9];
 
-            cellInfoList = tm.getAllCellInfo();
-            for (CellInfo cellInfo : cellInfoList)
-            {
-                if (cellInfo instanceof CellInfoLte)
-                {
-                    // cast to CellInfoLte and call all the CellInfoLte methods you need
-                    // gets RSRP cell signal strength:
-                    cellSig = ((CellInfoLte)cellInfo).getCellSignalStrength().getDbm();
+            try {
+                cellInfoList = tm.getAllCellInfo();
+                for (CellInfo cellInfo : cellInfoList) {
+                    if (cellInfo instanceof CellInfoLte) {
+                        // cast to CellInfoLte and call all the CellInfoLte methods you need
+                        // gets RSRP cell signal strength:
+                        cellSig = ((CellInfoLte) cellInfo).getCellSignalStrength().getDbm();
 
-                    // Gets the LTE cell identity: (returns 28-bit Cell Identity, Integer.MAX_VALUE if unknown)
-                    cellID = ((CellInfoLte)cellInfo).getCellIdentity().getCi();
+                        // Gets the LTE cell identity: (returns 28-bit Cell Identity, Integer.MAX_VALUE if unknown)
+                        cellID = ((CellInfoLte) cellInfo).getCellIdentity().getCi();
 
-                    // Gets the LTE MCC: (returns 3-digit Mobile Country Code, 0..999, Integer.MAX_VALUE if unknown)
-                    cellMcc = ((CellInfoLte)cellInfo).getCellIdentity().getMcc();
+                        // Gets the LTE MCC: (returns 3-digit Mobile Country Code, 0..999, Integer.MAX_VALUE if unknown)
+                        cellMcc = ((CellInfoLte) cellInfo).getCellIdentity().getMcc();
 
-                    // Gets theLTE MNC: (returns 2 or 3-digit Mobile Network Code, 0..999, Integer.MAX_VALUE if unknown)
-                    cellMnc = ((CellInfoLte)cellInfo).getCellIdentity().getMnc();
+                        // Gets theLTE MNC: (returns 2 or 3-digit Mobile Network Code, 0..999, Integer.MAX_VALUE if unknown)
+                        cellMnc = ((CellInfoLte) cellInfo).getCellIdentity().getMnc();
 
-                    // Gets the LTE PCI: (returns Physical Cell Id 0..503, Integer.MAX_VALUE if unknown)
-                    cellPci = ((CellInfoLte)cellInfo).getCellIdentity().getPci();
+                        // Gets the LTE PCI: (returns Physical Cell Id 0..503, Integer.MAX_VALUE if unknown)
+                        cellPci = ((CellInfoLte) cellInfo).getCellIdentity().getPci();
 
-                    // Gets the LTE TAC: (returns 16-bit Tracking Area Code, Integer.MAX_VALUE if unknown)
-                    cellTac = ((CellInfoLte)cellInfo).getCellIdentity().getTac();
+                        // Gets the LTE TAC: (returns 16-bit Tracking Area Code, Integer.MAX_VALUE if unknown)
+                        cellTac = ((CellInfoLte) cellInfo).getCellIdentity().getTac();
 
+                    }
                 }
+            } catch (Exception e) {
+                Log.d("SignalStrength", "+++++++++++++++++++++++++++++++ null array spot 3: " + e);
             }
 
             signalStrengthTextView.setText(String.valueOf(cellSig));
